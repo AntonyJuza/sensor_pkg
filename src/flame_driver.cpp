@@ -1,52 +1,66 @@
 #include "sensor_pkg/flame_driver.hpp"
-#include <pigpiod_if2.h>
-#include <iostream>
+#include <pigpio.h>
 
-#define SPI_CHANNEL 0
-#define SPI_SPEED 1000000
+#define SPI_SPEED 1000000  // 1 MHz
 
-FlameDriver::FlameDriver(int digital_pin, int analog_pin) 
-    : digital_pin_(digital_pin), analog_pin_(analog_pin), gpio_handle_(-1) {
+FlameDriver::FlameDriver(int digital_gpio, int spi_channel) 
+    : digital_gpio_(digital_gpio), spi_channel_(spi_channel), 
+      spi_handle_(-1), initialized_(false) {
     
-    // Connect to pigpiod daemon
-    gpio_handle_ = pigpio_start(NULL, NULL);
-    if (gpio_handle_ < 0) {
-        std::cerr << "Failed to connect to pigpio daemon! Try 'sudo pigpiod'" << std::endl;
+    // Initialize pigpio
+    if (gpioInitialise() < 0) {
         return;
     }
     
-    gpioSetMode(gpio_handle_, digital_pin_, PI_OUTPUT);
+    // Setup digital GPIO pin as input
+    gpioSetMode(digital_gpio_, PI_INPUT);
     
-    // Initialize SPI if analog pin is specified
-    if (analog_pin_ >= 0) {
-        spiOpen(gpio_handle_, SPI_CHANNEL, SPI_SPEED, 0);
+    // Initialize SPI if analog channel is specified
+    if (spi_channel_ >= 0) {
+        spi_handle_ = spiOpen(0, SPI_SPEED, 0);
+        if (spi_handle_ < 0) {
+            return;
+        }
     }
+    
+    initialized_ = true;
 }
 
 FlameDriver::~FlameDriver() {
+    if (spi_handle_ >= 0) {
+        spiClose(spi_handle_);
+    }
+    if (initialized_) {
+        gpioTerminate();
+    }
 }
 
 bool FlameDriver::flameDetected() {
+    if (!initialized_) return false;
     // Most flame sensors are active LOW (LOW = flame detected)
-    return gpioRead(gpio_handle_, digital_pin_) == 0;  // LOW = 0
+    return gpioRead(digital_gpio_) == PI_LOW;
 }
 
 int FlameDriver::readMCP3008(int channel) {
-    if (channel < 0) return 0;
+    if (spi_handle_ < 0 || channel < 0 || channel > 7) {
+        return -1;
+    }
     
+    // MCP3008 protocol
     unsigned char buffer[3];
     buffer[0] = 1;  // Start bit
     buffer[1] = (8 + channel) << 4;  // Single-ended channel selection
     buffer[2] = 0;
     
-    spiXfer(gpio_handle_, SPI_CHANNEL, (char*)buffer, (char*)buffer, 3);
+    spiXfer(spi_handle_, (char*)buffer, (char*)buffer, 3);
     
+    // Extract 10-bit ADC value
     return ((buffer[1] & 3) << 8) + buffer[2];
 }
 
 int FlameDriver::readAnalog() {
-    if (analog_pin_ < 0) {
+    if (spi_channel_ < 0) {
         return -1;  // Analog not configured
     }
-    return readMCP3008(analog_pin_);
+    return readMCP3008(spi_channel_);
 }

@@ -10,7 +10,7 @@ def generate_launch_description():
             name='dht11_node',
             output='screen',
             parameters=[{
-                'pin': 7,  # WiringPi pin 7 (GPIO 4)
+                'gpio_pin': 4,  # BCM GPIO 4
                 'publish_rate': 1.0  # 1 Hz
             }]
         ),
@@ -22,10 +22,10 @@ def generate_launch_description():
             name='mq2_node',
             output='screen',
             parameters=[{
-                'analog_channel': 0,  # MCP3008 channel 0
-                'digital_pin': 0,     # WiringPi pin 0 (GPIO 17)
-                'publish_rate': 2.0,  # 2 Hz
-                'gas_threshold': 300.0  # PPM
+                'spi_channel': 0,      # MCP3008 channel 0
+                'digital_gpio': 17,    # BCM GPIO 17
+                'publish_rate': 2.0,   # 2 Hz
+                'gas_threshold': 300.0 # PPM
             }]
         ),
         
@@ -36,9 +36,9 @@ def generate_launch_description():
             name='flame_node',
             output='screen',
             parameters=[{
-                'digital_pin': 1,  # WiringPi pin 1 (GPIO 18)
-                'analog_channel': 1,  # MCP3008 channel 1 (optional)
-                'publish_rate': 5.0  # 5 Hz
+                'digital_gpio': 18,    # BCM GPIO 18
+                'spi_channel': 1,      # MCP3008 channel 1 (optional)
+                'publish_rate': 5.0    # 5 Hz
             }]
         ),
     ])

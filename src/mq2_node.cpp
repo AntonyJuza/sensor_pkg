@@ -8,18 +8,18 @@ class MQ2Node : public rclcpp::Node {
 public:
     MQ2Node() : Node("mq2_node") {
         // Declare parameters
-        this->declare_parameter("analog_channel", 0);  // MCP3008 channel
-        this->declare_parameter("digital_pin", 0);     // WiringPi pin for digital out
+        this->declare_parameter("spi_channel", 0);     // MCP3008 channel
+        this->declare_parameter("digital_gpio", 17);   // BCM GPIO 17
         this->declare_parameter("publish_rate", 2.0);  // Hz
         this->declare_parameter("gas_threshold", 300.0);  // PPM threshold
         
-        int analog_ch = this->get_parameter("analog_channel").as_int();
-        int digital_pin = this->get_parameter("digital_pin").as_int();
+        int spi_ch = this->get_parameter("spi_channel").as_int();
+        int digital_gpio = this->get_parameter("digital_gpio").as_int();
         double rate = this->get_parameter("publish_rate").as_double();
         gas_threshold_ = this->get_parameter("gas_threshold").as_double();
         
         // Initialize driver
-        mq2_ = std::make_unique<MQ2Driver>(analog_ch, digital_pin);
+        mq2_ = std::make_unique<MQ2Driver>(spi_ch, digital_gpio);
         
         // Create publishers
         ppm_pub_ = this->create_publisher<std_msgs::msg::Float32>(
@@ -35,8 +35,8 @@ public:
             period, std::bind(&MQ2Node::timerCallback, this));
         
         RCLCPP_INFO(this->get_logger(), 
-                   "MQ2 node started - Analog CH: %d, Digital Pin: %d at %.1f Hz", 
-                   analog_ch, digital_pin, rate);
+                   "MQ2 node started - SPI CH: %d, GPIO: %d at %.1f Hz", 
+                   spi_ch, digital_gpio, rate);
         RCLCPP_INFO(this->get_logger(), "Gas threshold: %.1f PPM", gas_threshold_);
     }
 

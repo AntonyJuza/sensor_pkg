@@ -8,22 +8,22 @@ class FlameNode : public rclcpp::Node {
 public:
     FlameNode() : Node("flame_node"), last_state_(false) {
         // Declare parameters
-        this->declare_parameter("digital_pin", 1);  // WiringPi pin 1
-        this->declare_parameter("analog_channel", -1);  // MCP3008 channel (-1 = disabled)
+        this->declare_parameter("digital_gpio", 18);  // BCM GPIO 18
+        this->declare_parameter("spi_channel", -1);   // MCP3008 channel (-1 = disabled)
         this->declare_parameter("publish_rate", 5.0);  // Hz
         
-        int digital_pin = this->get_parameter("digital_pin").as_int();
-        int analog_ch = this->get_parameter("analog_channel").as_int();
+        int digital_gpio = this->get_parameter("digital_gpio").as_int();
+        int spi_ch = this->get_parameter("spi_channel").as_int();
         double rate = this->get_parameter("publish_rate").as_double();
         
         // Initialize driver
-        flame_ = std::make_unique<FlameDriver>(digital_pin, analog_ch);
+        flame_ = std::make_unique<FlameDriver>(digital_gpio, spi_ch);
         
         // Create publishers
         detection_pub_ = this->create_publisher<std_msgs::msg::Bool>(
             "flame/detected", 10);
         
-        if (analog_ch >= 0) {
+        if (spi_ch >= 0) {
             analog_pub_ = this->create_publisher<std_msgs::msg::Float32>(
                 "flame/intensity", 10);
         }
@@ -34,10 +34,10 @@ public:
             period, std::bind(&FlameNode::timerCallback, this));
         
         RCLCPP_INFO(this->get_logger(), 
-                   "Flame sensor node started - Digital Pin: %d at %.1f Hz", 
-                   digital_pin, rate);
-        if (analog_ch >= 0) {
-            RCLCPP_INFO(this->get_logger(), "Analog channel: %d", analog_ch);
+                   "Flame sensor node started - GPIO: %d at %.1f Hz", 
+                   digital_gpio, rate);
+        if (spi_ch >= 0) {
+            RCLCPP_INFO(this->get_logger(), "Analog SPI channel: %d", spi_ch);
         }
     }
 

@@ -5,33 +5,33 @@
   ros__parameters:
     # DHT11 Temperature & Humidity Sensor
     dht11_node:
-      pin: 7                    # WiringPi pin number (GPIO 4)
+      gpio_pin: 4               # BCM GPIO 4 (Physical pin 7)
       publish_rate: 1.0         # Hz - DHT11 max rate is ~1Hz
 
     # MQ2 Gas Sensor
     mq2_node:
-      analog_channel: 0         # MCP3008 channel for analog reading
-      digital_pin: 0            # WiringPi pin for digital output
+      spi_channel: 0            # MCP3008 channel for analog reading
+      digital_gpio: 17          # BCM GPIO 17 (Physical pin 11)
       publish_rate: 2.0         # Hz
       gas_threshold: 300.0      # PPM threshold for warnings
       
     # Flame Sensor
     flame_node:
-      digital_pin: 1            # WiringPi pin for digital output
-      analog_channel: 1         # MCP3008 channel (-1 to disable analog)
+      digital_gpio: 18          # BCM GPIO 18 (Physical pin 12)
+      spi_channel: 1            # MCP3008 channel (-1 to disable analog)
       publish_rate: 5.0         # Hz - fast response for safety
 
 # Alternative pin configurations (commented out):
-# If using different GPIO pins, update the WiringPi pin numbers
+# If using different GPIO pins, update the BCM GPIO numbers
 
 # Example for different pin mapping:
 # dht11_node:
-#   pin: 2                      # GPIO 27
+#   gpio_pin: 27                # BCM GPIO 27 (Physical pin 13)
 #
 # mq2_node:
-#   digital_pin: 3              # GPIO 22
-#   analog_channel: 2
+#   digital_gpio: 22            # BCM GPIO 22 (Physical pin 15)
+#   spi_channel: 2
 #
 # flame_node:
-#   digital_pin: 4              # GPIO 23
-#   analog_channel: 3
+#   digital_gpio: 23            # BCM GPIO 23 (Physical pin 16)
+#   spi_channel: 3

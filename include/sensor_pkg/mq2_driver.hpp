@@ -5,7 +5,7 @@
 
 class MQ2Driver {
 public:
-    MQ2Driver(int analog_pin, int digital_pin);
+    MQ2Driver(int spi_channel, int digital_gpio);
     ~MQ2Driver();
     
     int readAnalog();  // Returns ADC value (0-1023)
@@ -13,10 +13,11 @@ public:
     float getConcentrationPPM();  // Estimated gas concentration
     
 private:
-    int analog_pin_;
-    int digital_pin_;
-    int gpio_handle_;
-    int readMCP3008(int channel);  // For reading analog via MCP3008 ADC
+    int spi_channel_;      // MCP3008 channel (0-7)
+    int digital_gpio_;     // GPIO pin for digital output
+    int spi_handle_;       // pigpio SPI handle
+    bool initialized_;
+    int readMCP3008(int channel);
     float ro_;  // Sensor resistance in clean air
     void calibrate();
 };
