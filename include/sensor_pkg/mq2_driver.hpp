@@ -15,6 +15,7 @@ public:
 private:
     int spi_channel_;      // MCP3008 channel (0-7)
     int digital_gpio_;     // GPIO pin for digital output
+    int pi_;               // pigpio daemon handle
     int spi_handle_;       // pigpio SPI handle
     bool initialized_;
     int readMCP3008(int channel);

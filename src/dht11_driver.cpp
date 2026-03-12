@@ -1,29 +1,30 @@
 #include "sensor_pkg/dht11_driver.hpp"
-#include <pigpio.h>
+#include <pigpiod_if2.h>
 #include <cstring>
 #include <unistd.h>
 
 DHT11Driver::DHT11Driver(int gpio_pin) : gpio_pin_(gpio_pin), pi_(-1), initialized_(false) {
-    // Initialize pigpio
-    pi_ = gpioInitialise();
+    // Connect to pigpio daemon (localhost, default port)
+    pi_ = pigpio_start(NULL, NULL);
     if (pi_ < 0) {
+        // Failed to connect to daemon
         return;
     }
     
     // Set pin as output initially
-    gpioSetMode(gpio_pin_, PI_OUTPUT);
-    gpioWrite(gpio_pin_, 1);
+    set_mode(pi_, gpio_pin_, PI_OUTPUT);
+    gpio_write(pi_, gpio_pin_, 1);
     initialized_ = true;
 }
 
 DHT11Driver::~DHT11Driver() {
-    if (initialized_) {
-        gpioTerminate();
+    if (pi_ >= 0) {
+        pigpio_stop(pi_);
     }
 }
 
 bool DHT11Driver::readSensor(float &temperature, float &humidity) {
-    if (!initialized_) {
+    if (!initialized_ || pi_ < 0) {
         return false;
     }
     
@@ -46,6 +47,8 @@ bool DHT11Driver::readSensor(float &temperature, float &humidity) {
 }
 
 int DHT11Driver::readData(uint8_t data[5]) {
+    if (pi_ < 0) return -1;
+    
     uint8_t laststate = PI_HIGH;
     uint8_t counter = 0;
     uint8_t j = 0, i;
@@ -54,26 +57,26 @@ int DHT11Driver::readData(uint8_t data[5]) {
     data[0] = data[1] = data[2] = data[3] = data[4] = 0;
     
     // Send start signal
-    gpioSetMode(gpio_pin_, PI_OUTPUT);
-    gpioWrite(gpio_pin_, PI_LOW);
-    gpioDelay(18000);  // 18ms delay
-    gpioWrite(gpio_pin_, PI_HIGH);
-    gpioDelay(40);     // 40us delay
+    set_mode(pi_, gpio_pin_, PI_OUTPUT);
+    gpio_write(pi_, gpio_pin_, PI_LOW);
+    time_sleep(0.018);  // 18ms delay
+    gpio_write(pi_, gpio_pin_, PI_HIGH);
+    time_sleep(0.00004);  // 40us delay
     
     // Switch to input mode to read data
-    gpioSetMode(gpio_pin_, PI_INPUT);
+    set_mode(pi_, gpio_pin_, PI_INPUT);
     
     // Wait for sensor response and read 40 bits (5 bytes)
     for (i = 0; i < 85; i++) {
         counter = 0;
-        while (gpioRead(gpio_pin_) == laststate) {
+        while (gpio_read(pi_, gpio_pin_) == laststate) {
             counter++;
-            gpioDelay(1);
+            time_sleep(0.000001);  // 1us delay
             if (counter == 255) {
                 break;
             }
         }
-        laststate = gpioRead(gpio_pin_);
+        laststate = gpio_read(pi_, gpio_pin_);
         
         if (counter == 255) break;
         
@@ -93,4 +96,4 @@ int DHT11Driver::readData(uint8_t data[5]) {
     }
     
     return -1;  // Error
-}
+}   

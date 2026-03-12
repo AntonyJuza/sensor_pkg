@@ -14,6 +14,7 @@ public:
 private:
     int digital_gpio_;
     int spi_channel_;
+    int pi_;               // pigpio daemon handle
     int spi_handle_;
     bool initialized_;
     int readMCP3008(int channel);

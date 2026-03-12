@@ -6,12 +6,12 @@ def generate_launch_description():
         # DHT11 Temperature & Humidity Sensor
         Node(
             package='sensor_pkg',
-            executable='dht11_node',
-            name='dht11_node',
+            executable='dht22_node_python.py',
+            name='dht22_node',
             output='screen',
             parameters=[{
-                'gpio_pin': 4,  # BCM GPIO 4
-                'publish_rate': 1.0  # 1 Hz
+                'gpio_pin': 27,  # BCM GPIO 27 (Physical pin 13)
+                'publish_rate': 0.5  # 0.5 Hz
             }]
         ),
         

@@ -3,10 +3,10 @@
 
 /**:
   ros__parameters:
-    # DHT11 Temperature & Humidity Sensor
-    dht11_node:
-      gpio_pin: 4               # BCM GPIO 4 (Physical pin 7)
-      publish_rate: 1.0         # Hz - DHT11 max rate is ~1Hz
+    # DHT22 Temperature & Humidity Sensor
+    dht22_node:
+      gpio_pin: 27               # BCM GPIO 27 (Physical pin 13)
+      publish_rate: 0.5         # Hz - DHT22 max rate is ~0.5Hz
 
     # MQ2 Gas Sensor
     mq2_node:
