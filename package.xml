@@ -3,9 +3,9 @@
 <package format="3">
   <name>sensor_pkg</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="antonyjuza@gmail.com">pi</maintainer>
-  <license>TODO: License declaration</license>
+  <description>A ROS 2 package containing driver nodes for hardware sensors including DHT11, DHT22, Flame, and MQ-2 gas sensors, along with a sensor simulator.</description>
+  <maintainer email="antonyjuza@gmail.com">Antony Juza</maintainer>
+  <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
